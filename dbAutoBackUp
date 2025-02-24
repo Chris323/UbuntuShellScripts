@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # Set directory paths
-source_dir="/path/to/source_directory"
-destination_dir="/path/to/destination_directory"
+source_dir="/var/www/bookstack"
+destination_dir="/home/boot/Desktop/Backup_Folder"
 file_name="bookstack.backup"
 file_extension=".sql"
 
@@ -12,7 +12,11 @@ retry_delay=3600  # 1 hour in seconds
 
 # Function to perform mysqldump
 perform_backup() {
-    backup_file="$source_dir/$file_name-$(date +'%Y%m%d_%H%M%S')$file_extension"
+    # Generate timestamp and create the backup filename
+    timestamp=$(date +'%Y%m%d_%H%M%S')
+    backup_file="$source_dir/$file_name-$timestamp$file_extension"
+    
+    # Run mysqldump and create the backup file
     sudo mysqldump -u root bookstack > "$backup_file"
 }
 
@@ -24,7 +28,7 @@ while [ $attempt -lt $max_retries ]; do
     # Check if mysqldump was successful
     if [ $? -eq 0 ]; then
         # If successful, move the file and delete from the source directory
-        mv -f "$source_dir/$file_name-$(date +'%Y%m%d_%H%M%S')$file_extension" "$destination_dir/"
+        mv -f "$source_dir/$backup_file" "$destination_dir/"
         exit 0  # Exit the script after success
     else
         # If mysqldump failed, print an error message and wait before retrying
