@@ -1,0 +1,39 @@
+#!/bin/bash
+
+# Set directory paths
+source_dir="/path/to/source_directory"
+destination_dir="/path/to/destination_directory"
+file_name="bookstack.backup"
+file_extension=".sql"
+
+# Define the number of retries and the delay in seconds (1 hour = 3600 seconds)
+max_retries=3
+retry_delay=3600  # 1 hour in seconds
+
+# Function to perform mysqldump
+perform_backup() {
+    backup_file="$source_dir/$file_name-$(date +'%Y%m%d_%H%M%S')$file_extension"
+    sudo mysqldump -u root bookstack > "$backup_file"
+}
+
+# Attempt to run mysqldump with retries
+attempt=0
+while [ $attempt -lt $max_retries ]; do
+    perform_backup
+
+    # Check if mysqldump was successful
+    if [ $? -eq 0 ]; then
+        # If successful, move the file and delete from the source directory
+        mv -f "$source_dir/$file_name-$(date +'%Y%m%d_%H%M%S')$file_extension" "$destination_dir/"
+        exit 0  # Exit the script after success
+    else
+        # If mysqldump failed, print an error message and wait before retrying
+        echo "mysqldump failed. Retrying in 1 hour..."
+        attempt=$((attempt + 1))
+        sleep $retry_delay  # Wait for 1 hour (3600 seconds)
+    fi
+done
+
+# If all retries fail, print a final error message and exit with a non-zero status
+echo "mysqldump failed after $max_retries attempts. The backup was not created."
+exit 1
