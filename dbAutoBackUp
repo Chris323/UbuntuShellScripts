@@ -28,7 +28,7 @@ while [ $attempt -lt $max_retries ]; do
     # Check if mysqldump was successful
     if [ $? -eq 0 ]; then
         # If successful, move the file and delete from the source directory
-        mv -f "$source_dir/$backup_file" "$destination_dir/"
+        mv -f "$backup_file" "$destination_dir/"
         exit 0  # Exit the script after success
     else
         # If mysqldump failed, print an error message and wait before retrying
