@@ -23,6 +23,7 @@ perform_backup() {
 # Attempt to run mysqldump with retries
 attempt=0
 while [ $attempt -lt $max_retries ]; do
+    timestampOut=$(date +'%Y%m%d_%H%M%S')
     perform_backup
 
     # Check if mysqldump was successful
@@ -31,19 +32,20 @@ while [ $attempt -lt $max_retries ]; do
         cp "$backup_file" "$destination_dir/"  # Copy the file to the SMB share
         if [ $? -eq 0 ]; then
             rm -f "$backup_file"  # Remove the original file after copy
+            echo "Backup successful! $timestampOut"
             exit 0  # Exit the script after success
         else
-            echo "Failed to copy the backup file to the destination."
+            echo "Failed to copy the backup file to the destination on $timestampOut"
             exit 1
         fi
     else
         # If mysqldump failed, print an error message and wait before retrying
-        echo "mysqldump failed. Retrying in 1 hour..."
+        echo "mysqldump failed at $timestampOut. Retrying in 1 hour..."
         attempt=$((attempt + 1))
         sleep $retry_delay  # Wait for 1 hour (3600 seconds)
     fi
 done
 
 # If all retries fail, print a final error message and exit with a non-zero status
-echo "mysqldump failed after $max_retries attempts. The backup was not created."
+echo "mysqldump failed at $timestampOut after $max_retries attempts. The backup was not created."
 exit 1
