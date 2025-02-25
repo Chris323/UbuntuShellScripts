@@ -17,7 +17,7 @@ perform_backup() {
     backup_file="$source_dir/$file_name-$timestamp$file_extension"
     
     # Run mysqldump and create the backup file
-    sudo mysqldump -u root bookstack > "$backup_file"
+    sudo /usr/bin/mysqldump -u root bookstack > "$backup_file"
 }
 
 # Attempt to run mysqldump with retries
